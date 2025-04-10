@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import DatePicker from "react-datepicker";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -9,15 +11,38 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [startDate, setStartDate] = useState(new Date());
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password) {
-      setError("All fields are required!");
+    if (!email || !password) {
+      setError("Email and password are required!");
       return;
     }
     setError("");
-    console.log("User signed up:", { name, email, password });
+    try {
+      const response = await fetch("https://localhost:7139/api/Auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+          name: name,
+        }),
+      });
+      //const data = await response.json();
+      console.log(response);
+      if (response && response.status == 200) {
+        toast.success("Signed up successfully");
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      toast.error("Login failed. Please try again.");
+    }
+    //navigate("/dashboard");
   };
 
   const handleLogin = () => {
@@ -85,6 +110,23 @@ export default function Signup() {
               placeholder="Enter password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+            />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <label className="block text-gray-700">Date Of Birth</label>
+            <DatePicker
+            showMonthDropdown
+            showYearDropdown
+            dropdownMode="select" // or "scroll"
+              selected={startDate}
+              onChange={(date) => {
+                if (date) setStartDate(date);
+              }}
+              className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </motion.div>
 

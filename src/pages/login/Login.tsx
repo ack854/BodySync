@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -9,19 +10,44 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       setError("Email and password are required!");
       return;
     }
     setError("");
-    navigate("/dashboard");
+    try {
+      const response = await fetch("https://localhost:7139/api/Auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+      const data = await response.json();
+      console.log(data, response);
+      if (data?.token) {
+        toast.success("Logged in successfully")
+        const res = await fetch(`https://localhost:7139/api/User/email/${email}`);
+        const userData = await res.json();
+        sessionStorage.setItem("user_data", JSON.stringify(userData));
+        console.log(userData)
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      toast.error("Login failed. Please try again.");
+    }
+    //navigate("/dashboard");
   };
 
-  const handleSignup = () =>{
+  const handleSignup = () => {
     navigate("/signup");
-  }
+  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-purple-500 to-blue-500">
@@ -31,7 +57,6 @@ const Login: React.FC = () => {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-sm"
       >
-
         {error && (
           <motion.p
             initial={{ opacity: 0 }}
@@ -85,7 +110,10 @@ const Login: React.FC = () => {
 
         <p className="text-center text-sm text-gray-600 mt-4">
           Don't have an account?{" "}
-          <a className="text-purple-500 hover:underline cursor-pointer" onClick= {handleSignup}>
+          <a
+            className="text-purple-500 hover:underline cursor-pointer"
+            onClick={handleSignup}
+          >
             Sign up
           </a>
         </p>
