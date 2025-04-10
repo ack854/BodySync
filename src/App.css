@@ -1,0 +1,11 @@
+.app-wrapper {
+    min-height: 100vh;
+    background-image: url('/images/bg-image.jpg'); /* ✅ match your file */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+  }
+  
